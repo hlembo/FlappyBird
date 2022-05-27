@@ -5,14 +5,39 @@ import os
 import time
 import pickle
 
-WIN_WIDTH = 600
-WIN_HEIGHT = 800
+WIN_WIDTH = 500
+WIN_HEIGHT = 800 
 
 BIRD_IMGS = [pygame.transform.scale2x(pygame.image.load(os.path.join("imgs", "bird1.png"))), pygame.transform.scale2x(pygame.image.load(os.path.join("imgs", "bird2.png"))), pygame.transform.scale2x(pygame.image.load(os.path.join("imgs", "bird3.png")))]
 
 PIPE_IMG = pygame.transform.scale2x(pygame.image.load(os.path.join("imgs", "pipe.png")))
 BASE_IMG = pygame.transform.scale2x(pygame.image.load(os.path.join("imgs", "base.png")))
 BG_IMG = pygame.transform.scale2x(pygame.image.load(os.path.join("imgs", "bg.png")))
+
+class Base:
+    VEL = 5
+    WIDTH = BASE_IMG.get_width()
+    IMG = BASE_IMG
+
+    def __init__(self, y):
+        self.y = y
+        self.x1 = 0
+        self.x2 = self.WIDTH
+
+    def move(self):
+        self.x1 -= self.VEL
+        self.x2 -= self.VEL
+        if self.x1 + self.WIDTH < 0:
+            self.x1 = self.x2 + self.WIDTH
+
+        if self.x2 + self.WIDTH < 0:
+            self.x2 = self.x1 + self.WIDTH
+
+    def draw(self, win):
+        win.blit(self.IMG, (self.x1, self.y))
+        win.blit(self.IMG, (self.x2, self.y))
+
+
 class Pipe:
     GAP = 200
     VEL = 5
@@ -115,14 +140,17 @@ class Bird:
         offset = (self.x - pipe.x, self.y - pipe.y)
         return bird_mask.overlap(pipe_mask, offset)
     
-def draw_window(win, bird):
+def draw_window(win, bird, pipes, base, score):
     win.blit(BG_IMG, (0,0))
+    for pipe in pipes:
+        pipe.draw(win)   
     bird.draw(win)
     pygame.display.update()
 
 def main():
     bird = Bird(230, 350)
     pipes = [Pipe(600)]
+    base = Base(730)
     win = pygame.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
     clock = pygame.time.Clock()
     score = 0
@@ -146,11 +174,17 @@ def main():
             if not pipe.passed and pipe.x < bird.x:
                 pipe.passed = True
                 add_pipe = True
-        if add_pipe:
+            pipe.move()
+        if add_pipe:   
             score += 1
             pipes.append(Pipe(600))
         for r in rem:
             pipes.remove(r)
-        draw_window(win, bird)
+        if bird.y + bird.img.get_height() >= 730:
+            run = False
+        base.move()
+        draw_window(win, bird, pipes, base, score)
     pygame.quit()
     quit()
+
+main()
