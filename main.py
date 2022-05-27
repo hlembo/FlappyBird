@@ -1,9 +1,6 @@
-## create a Flappy Bird game in pygame
 import pygame
 import random
-import os
-import time
-import pickle
+import os  
 
 WIN_WIDTH = 500
 WIN_HEIGHT = 800 
